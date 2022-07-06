@@ -66,7 +66,7 @@ server<-function(input, output) {
     output$img<-renderImage({
       print(event)
       
-      path_to_image<-imagedata()$SourceFile[grep(event$id,imagedata()$SourceFile)]
+      path_to_image<-imagedata()$SourceFile[grep(paste0("\\/",event$id),imagedata()$SourceFile)]
       print(path_to_image)
   
       list(
