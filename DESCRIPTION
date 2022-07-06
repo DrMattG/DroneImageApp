@@ -1,5 +1,5 @@
 Package: DroneImageApp
-Title: Interact With Drone Images and record metadata
+Title: Interact with Drone Images and Record Metadata
 Version: 0.0.0.9000
 Authors@R: 
     person("Matthew", "Grainger", , "matthewjamesgrainger@gmail.com", role = c("aut", "cre"),
@@ -9,4 +9,4 @@ License: GPL (>= 3) + LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
-Import: shiny
+Imports: shiny
