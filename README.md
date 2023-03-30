@@ -19,9 +19,10 @@ library(DroneImageApp)
 runShiny()
 ```
 
-## Things to do
+You can also run the Shiny App directly from GitHub using 
 
-[ ] Add Event (drone metadata, transect id, date, image, etc.) rather than image data 
 
-[ ] Add species labelling module (dynamically update occurrence data)
+```
+shiny::runGitHub("DrMattG", "DroneImageApp")
 
+```
