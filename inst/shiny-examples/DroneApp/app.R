@@ -61,7 +61,7 @@ server<-function(input, output, session) {
     exifr::read_exif(files)
     })
   
-   output$image_selector <- renderUI({
+ output$image_selector <- renderUI({
     choices <- imagedata()$SourceFile
     selectInput("image", "Select an image", choices = choices)
   })
