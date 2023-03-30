@@ -2,24 +2,27 @@ options(shiny.maxRequestSize=50*1024^2)
 
 
 library(shiny)
+library(shinyjs)
 library(exifr)
 library(tidyverse)
 library(leaflet)
 library(imager)
 library(uasimg)
 library(magick)
+library(DT)
 
 
 # Define UI 
 ui<-fluidPage(
-  
+  useShinyjs(),
   # Application title
   titlePanel("Method for drone-based monitoring of wildlife populations in Murchison Falls National Park"),
   
-  # Show a plot of the generated distribution
-  
+  # Tabset panel
   tabsetPanel(
-    tabPanel(title="Flight Information",
+    # Tab panel to select images and show on a leaflet map
+    
+      tabPanel(title="Flight Information",
              sidebarPanel(
                fileInput("folder", label="Upload image files here",
                          accept = ".jpg",
@@ -29,21 +32,25 @@ ui<-fluidPage(
              leafletOutput("map"))),
    
     tabPanel(title="image",
-             fluidRow(
-               actionButton("nyttBilde", "Next picture"),
-               actionButton("lastBilde", "Previous picture"),
-               sliderInput('width2', label = "Zoom", min=200, max=4000, step=100,
-                           value = 600, width = "100%"),
+    # Tab panel to select images - dropdown to select image
+           fluidRow(
+             uiOutput("image_selector"),
                column(width = 6,
                       # Add an image
-                      imageOutput("img", height="600px", click="plotclick"),
-                      textOutput("imgName")),
+                      imageOutput("img", click="plot_click"),
+                      ),
+               
+              )),
+    tabPanel(title="Table",
+             fluidRow(
                column(width = 6,
+                      uiOutput("species_input"),
                       # Add a table
-                      DT::DTOutput("tab"),
-                      textOutput("clickcoord")
+                      DT::dataTableOutput("coord_table"),
+                      actionButton("save", "Save Coordinates"),
                )
-              )))
+               
+             )))
   )
 
 server<-function(input, output, session) {
@@ -53,6 +60,11 @@ server<-function(input, output, session) {
     files <- input$folder$datapath
     exifr::read_exif(files)
     })
+  
+   output$image_selector <- renderUI({
+    choices <- imagedata()$SourceFile
+    selectInput("image", "Select an image", choices = choices)
+  })
   
   
     output$directorypath <- renderText({
@@ -71,75 +83,54 @@ server<-function(input, output, session) {
       setView(lng=31.4, lat=2.27, zoom=12)
   })
     
-    
-    v <- reactiveValues(data = NULL, index=0)
-    
-    observeEvent(input$nyttBilde, {
-      v$index=v$index+1
-      
-      print(v$index)
-      })
-    observeEvent(input$lastBilde, {
-      v$index=v$index-1
-      
-      print(v$index)
+  output$species_input <- renderUI({
+      selectInput("species", "Species", c("Elephant","White Rhinoceros", "Hippopotamus", "Warthog","Kob", "Waterbuck", "Bohor Reedbuck", 
+                                          "Duiker", "Hartebeest", "Oribi", "Buffalo" ,"Giraffe", "Other"), selected = "Hartebeest")
     })
     
     
     output$img<-renderImage({
-      image <- image_read(imagedata()$SourceFile[grep(paste0("\\/",v$index),imagedata()$SourceFile)])
+      image <- image_read(input$image,imagedata()$SourceFile)
       tmp <- image %>%
         image_border("grey", "20x10") %>%
         image_write(tempfile(fileext='jpg'), format = 'jpg')
       list(src = paste(tmp),
            contentType = 'image/jpeg',
-           width = input$width2,
            height = 'auto')
     }, deleteFile = F)
     
-  output$imgName<-renderPrint({
-    imagedata()$SourceFile[grep(paste0("\\/",v$index),imagedata()$SourceFile)]
-  })
   
-  # click on a marker
-  # observe({ 
-  #   event <- input$map_marker_click
-  #   output$img<-renderPlot({
-  #     path_to_image<-imagedata()$SourceFile[grep(paste0("\\/",event$id),imagedata()$SourceFile)]
-  #     bb<-raster::stack(path_to_image)
-  #     plotit=  raster::plotRGB(bb)
-  #     plotit
-  #     })
-  #   output$imgName<-renderPrint(event$id)
-    output$clickcoord <- renderPrint({
-      print(paste0(input$plotclick$x, " , ", input$plotclick$y))
-    })
-  #     })
-  
-  
-  
-  
-  output$tab<-DT::renderDataTable({
+# Record clicked coordinates
+    coords <- reactiveValues()
     
-   tab=imagedata() %>% 
-      select(GPSLongitude,GPSLatitude,FileName) %>% 
-     mutate("Species"=NA) %>% 
-     mutate("Number"=as.numeric(NA)) |> 
-     mutate("Location in image"= NA)
-   
-   DT::datatable(tab, editable = TRUE,
-                 extensions='Buttons',
-                 options=list(
-                   paging = TRUE,
-                   searching = TRUE,
-                   fixedColumns = TRUE,
-                   autoWidth = TRUE,
-                   ordering = TRUE,
-                   dom = 'tB',
-                   buttons = c('copy', 'csv', 'excel')
-                 ))
-  })
-  
+    observeEvent(input$plot_click, {
+      coords$click <- input$plot_click
+      print(coords)
+    })
+    
+    # Save data to table
+    data <- reactiveValues(table = data.frame(file = character(),
+                                              x = numeric(),
+                                              y = numeric()))
+    
+    observeEvent(input$save, {
+      if (!is.null(input$image) & !is.null(coords$click)) {
+        data$table <- rbind(data$table, data.frame(file = input$image,
+                                                   x = coords$click$x,
+                                                   y = coords$click$y,
+                                                   species=input$species))
+      }
+    })
+    
+    # Show table
+    output$coord_table <- renderDataTable(
+      datatable(data$table, extensions = 'Buttons',
+                options=list(scrollX=TRUE, lengthMenu = c(5,10,15),
+                             paging = TRUE, searching = TRUE,
+                             fixedColumns = TRUE, autoWidth = TRUE,
+                             ordering = TRUE, dom = 'tB',
+                             buttons = c('copy', 'csv', 'excel','pdf'))))
+
   
 }
 
