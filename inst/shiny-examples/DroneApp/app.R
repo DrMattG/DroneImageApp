@@ -53,6 +53,15 @@ ui<-fluidPage(
              )))
   )
 
+
+# Intitalise data 
+# Initialize data table
+data <- reactiveValues(table = data.frame(file = character(),
+                                          x = numeric(),
+                                          y = numeric(),
+                                          species=character()))
+
+
 server<-function(input, output, session) {
   
   imagedata<-reactive({
@@ -109,9 +118,7 @@ server<-function(input, output, session) {
     })
     
     # Save data to table
-    data <- reactiveValues(table = data.frame(file = character(),
-                                              x = numeric(),
-                                              y = numeric()))
+   
     
     observeEvent(input$save, {
       if (!is.null(input$image) & !is.null(coords$click)) {
@@ -119,14 +126,14 @@ server<-function(input, output, session) {
                                                    x = coords$click$x,
                                                    y = coords$click$y,
                                                    species=input$species))
+      # print(data$table)
       }
     })
     
     # Show table
     output$coord_table <- renderDataTable(
       datatable(data$table, extensions = 'Buttons',
-                options=list(scrollX=TRUE, lengthMenu = c(5,10,15),
-                             paging = TRUE, searching = TRUE,
+                options=list(scrollX=TRUE, paging = TRUE, searching = TRUE,
                              fixedColumns = TRUE, autoWidth = TRUE,
                              ordering = TRUE, dom = 'tB',
                              buttons = c('copy', 'csv', 'excel','pdf'))))
