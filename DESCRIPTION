@@ -2,8 +2,12 @@ Package: DroneImageApp
 Title: Interact with Drone Images and Record Metadata
 Version: 0.0.0.9000
 Authors@R: 
-    person("Matthew", "Grainger", , "matthewjamesgrainger@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0001-8426-6495"))
+    c(person("Matthew", "Grainger", , "matthewjamesgrainger@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-8426-6495")),
+           person("Craig", "Jackson", role = c("aut"),
+           comment = c(ORCID = "0000-0002-3918-1721")),
+           person("Roel", "May", role = c("aut"),
+           comment = c(ORCID = "0000-0002-6580-4064")))
 Description: This package is designed to aid data entry for drone-based monitoring of wildlife populations in Murchison Falls National Park	 
 License: GPL (>= 3) + LICENSE
 Encoding: UTF-8
