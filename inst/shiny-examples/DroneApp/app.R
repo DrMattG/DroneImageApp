@@ -7,7 +7,6 @@ library(exifr)
 library(tidyverse)
 library(leaflet)
 library(imager)
-library(uasimg)
 library(magick)
 library(DT)
 
