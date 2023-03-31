@@ -1,5 +1,7 @@
 # DroneImageApp
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7788318.svg)](https://doi.org/10.5281/zenodo.7788318)
+
 *WARNING - The App is in development and will change considerably*
 
 Please clone the repository (see detailed instructions [here](https://happygitwithr.com/rstudio-git-github.html)). 
